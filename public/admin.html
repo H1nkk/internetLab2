@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Admin's page</title>
+</head>
+<body style="background-color: rgb(46, 55, 58);">
+    <div id="unsolved-container">
+        <div style="text-align: center; font-weight: 700; font-size: 20px; padding-bottom: 5px;">
+            <label for="unsolved" style="margin: auto;">Unsolved problems list</label>
+        </div>
+        <table id="unsolved">
+            <tr>
+                <th>Problem id</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Author</th>
+                <th>Assign task to a worker</th>
+                <th>Solve</th>
+
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>Input doesn't work</td>
+                <td>When i try to input smt it doesnt allow me to :(</td>
+                <td>Ivan Ivanov Ivanovich</td>
+                <td>
+                    <div id="button-container" style="text-align: center;">
+                        <select name="workers" id="workers-select">
+                            <option value="option1">ivan</option>
+                            <option value="option2">slava</option>
+                            <option value="option3">jobster</option>
+                        </select>
+                        <button>assign</button>
+                    </div>
+                </td>
+                <td>
+                    <button>Mark as solved</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <div id="solved-container">
+        <div style="text-align: center; font-weight: 700; font-size: 20px; padding-bottom: 5px;">
+            <label for="solved" style="margin: auto;">Solved problems list</label>
+        </div>
+        <table id="solved">
+            <tr>
+                <th>Problem id</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Author</th>
+                <th>Revert to unsolved</th>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Submit button doenst work</td>
+                <td>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</td>
+                <td>Ivan Petrov Ivanovich</td>
+                <td>
+                    <div id="button-container" style="text-align: center;">
+                        <button>Mark as unsolved</button>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

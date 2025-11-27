@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>User's page</title>
+</head>
+<body style="background-color: rgb(147, 161, 165);">
+    <div id="form-container" style="width: fit-content; height: fit-content; margin: auto;">
+        <form>
+            <label for="first-name">Your first name:</label>
+            <br>
+            <input type="text" id="first-name" name="firstname" placeholder="Ivan" required>
+            <br>
+            <br>
+            
+            <label for="second-name">Your second name:</label>
+            <br>
+            <input type="text" id="second-name" name="secondname" placeholder="Ivanov" required>
+            <br>
+            <br>
+
+            <label for="last-name">Your last name:</label>
+            <br>
+            <input type="text" id="last-name" name="lastname" placeholder="Ivanovich" required>
+            <br>
+            <br>
+
+            <label for="phone-number">Your phone number:</label>
+            <br>
+            <input type="tel" id="phone-number" name="phonenumber" placeholder="+79991003030" required>
+            <br>
+            <br>
+
+            <label for="problem-title">Problem title: </label>
+            <br>
+            <input type="text" id="problem-title" name="problemtitle" placeholder="Briefly describe your problem..." required>
+            <br>
+            <br>
+
+            <label for="problem-description">Describe your problem: </label>
+            <br>
+            <input type="text" id="problem-description" name="problemdescription" required>
+            <br>
+            <br>
+
+            <div id="button-container" style="text-align: center;">
+                <button>
+                    Submit
+                </button>
+            </div>
+        </form>
+    </div>
+    <br>
+    <br>
+    <div id="table-container" style="width: fit-content; height: fit-content; margin: auto;">
+        <div style="text-align: center; font-weight: 700; font-size: 20px; padding-bottom: 5px;">
+            <label for="problem-table" style="margin: auto;">Problems list</label>
+        </div>
+
+        <table id="problem-table">
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Author</th>
+                <th>Status</th>
+            </tr>
+            <tr>
+                <td>Input doesn't work</td>
+                <td>When i try to input smt it doesnt allow me to :(</td>
+                <td>Ivan Ivanov Ivanovich</td>
+                <td class="unsolved">Unsolved</td>
+            </tr>
+            <tr>
+                <td>Submit button doenst work</td>
+                <td>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</td>
+                <td>Ivan Petrov Ivanovich</td>
+                <td class="solved">Solved</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
