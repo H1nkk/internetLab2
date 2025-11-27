@@ -7,6 +7,12 @@
     <title>Admin's page</title>
 </head>
 <body style="background-color: rgb(46, 55, 58);">
+    <header style="text-align: right;">
+        User: admin
+        <button onclick="toAuth();"> <!-- TODO здесь надо перекинуть на auth.html при onclick -->
+            log out
+        </button>
+    </header>
     <div id="unsolved-container">
         <div style="text-align: center; font-weight: 700; font-size: 20px; padding-bottom: 5px;">
             <label for="unsolved" style="margin: auto;">Unsolved problems list</label>
@@ -73,5 +79,10 @@
             </tr>
         </table>
     </div>
+    <script>
+        function toAuth() {
+            window.location.href = 'file:///D:/Programming/html/internet2/auth.html';
+        }
+    </script>
 </body>
 </html>
