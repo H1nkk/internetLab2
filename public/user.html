@@ -7,14 +7,14 @@
     <title>User's page</title>
 </head>
 <body style="background-color: rgb(147, 161, 165);">
-    <div id="form-container" style="width: fit-content; height: fit-content; margin: auto;">
-        <form>
+    <div id="form-container" style="width: fit-content; height: fit-content; margin: auto;text-align: center; font-weight: 700; font-size: 20px; padding-bottom: 5px;" style="">
+        <form method="post">
             <label for="first-name">Your first name:</label>
             <br>
             <input type="text" id="first-name" name="firstname" placeholder="Ivan" required>
             <br>
             <br>
-            
+
             <label for="second-name">Your second name:</label>
             <br>
             <input type="text" id="second-name" name="secondname" placeholder="Ivanov" required>
@@ -41,7 +41,7 @@
 
             <label for="problem-description">Describe your problem: </label>
             <br>
-            <input type="text" id="problem-description" name="problemdescription" required>
+            <textarea id="problem-description" name="problemdescription" required></textarea>
             <br>
             <br>
 
