@@ -7,16 +7,16 @@
 </head>
 <body style="background-color: rgb(27, 49, 56);">
     <div id="form-container" style="width: fit-content; height: fit-content; margin: auto;">
-        <form>
-            <label for="first-name">Login:</label>
+        <form method="post">
+            <label for="login">Login:</label>
             <br>
-            <input type="text" id="first-name" name="login" placeholder="" required>
+            <input type="text" id="login" name="login" placeholder="" required>
             <br>
             <br>
             
-            <label for="second-name">Password:</label>
+            <label for="password">Password:</label>
             <br>
-            <input type="password" id="second-name" name="password" placeholder="" required>
+            <input type="password" id="password" name="password" placeholder="" required>
             <br>
             <br>
 
@@ -26,12 +26,15 @@
                 </button>
                 <br>
                 <br>
-                <button>
-                    Register
-                </button>
             </div>
         </form>
+        <div style="text-align: center">
+            <button id="regbutton">
+                Register
+            </button>
+        </div>
     </div>
 
+    <script src="/regscript.js"></script>
 </body>
 </html>
