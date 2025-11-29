@@ -8,75 +8,144 @@
     <script>
         var logout_url = "http://localhost:3000/logout";
         var get_login_url = "http://localhost:3000/get_login";
-        var unsolved_url = "http://localhost:3000/unsolved/admin";
-        var solved_url = "http://localhost:3000/solved/admin";
+        var unassigned_url = "http://localhost:3000/admin/unassigned";
+        var unsolved_url = "http://localhost:3000/admin/unsolved";
+        var solved_url = "http://localhost:3000/admin/solved";
+        var put_url = "http://localhost:3000/admin/put";
 
-        function queryUnsolvedTable(request) {
-            function reqListenerUnsolved(event) {
-                var data = JSON.parse(this.responseText);
-                var table = document.getElementById("unsolved-table")
-                table.innerHTML='';
-                if (data.length > 0) {
-                    var header = table.createTHead();
-                    var hrow = header.insertRow();
-                    for (k in data[0]) {
-                        var cell = hrow.insertCell();
-                        cell.outerHTML = '<th>' + k + '</th>';
-                    }
-                    var cell = hrow.insertCell();
-                    cell.outerHTML = '<th>Solve</th>';
-                }
-                for (var i = 0; i < data.length - 1; i++) {
-                    var newRow = table.insertRow();
-                    for (j in data[i]) {
-                        var cell = newRow.insertCell();
-                        cell.innerHTML = data[i][j];
-                    }
-                    var cell = newRow.insertCell();
-                    cell.innerHTML = "<button>Mark as solved</button>";
+        // TODO заменить все кавычки на единый стиль? ##############################################################################################################################
+        function assignWorker(request, id) {
+            function reqListenerWorker(event) {
+                if (this.status === 200) {
+                    queryTables();
+                } else {
+                    console.error('error updating visible tables after assigning');
                 }
             }
+            var select = document.getElementById(`select_${id}`);
+
             var oReq = new XMLHttpRequest();
-            oReq.addEventListener('load', reqListenerUnsolved);
-            oReq.open("GET", request);
-            oReq.send();
+            oReq.addEventListener('load', reqListenerWorker);
+            oReq.open("PUT", request);
+            oReq.setRequestHeader('Content-Type', 'application/json');
+            oReq.send(JSON.stringify({ id : id, worker: select.value }));
         }
 
-        function querySolvedTable(request) {
-            function reqListenerSolved(event) {
-                var data = JSON.parse(this.responseText);
-                var table = document.getElementById("solved-table")
-                table.innerHTML='';
-                if (data.length > 0) {
-                    var header = table.createTHead();
-                    var hrow = header.insertRow();
-                    for (var k in data[0]) {
-                        var cell = hrow.insertCell();
-                        cell.outerHTML = '<th>' + k + '</th>';
-                    }
+        function reqListenerUnassigned(event) {
+            var data = JSON.parse(this.responseText)
+            var table_data = data[0];
+            var workers_data = data[1];
+            console.log(workers_data);
+            var table = document.getElementById("unassigned-table")
+            table.innerHTML='';
+            if (table_data.length > 0) {
+                var header = table.createTHead();
+                var hrow = header.insertRow();
+                for (var k in table_data[0]) {
                     var cell = hrow.insertCell();
-                    cell.outerHTML = '<th>Revert to unsolved</th>';
+                    cell.outerHTML = '<th>' + k + '</th>';
                 }
-                for (var i = 0; i < data.length; i++) {
-                    var newRow = table.insertRow();
-                    for (j in data[i]) {
-                        var cell = newRow.insertCell();
-                        cell.innerHTML = data[i][j];
-                    }
+            } else {
+                var placeholder = document.getElementById("unassigned-placeholder");
+                placeholder.innerHTML = "No unassigned problems to show";
+            }
+            for (var i = 0; i < table_data.length; i++) {
+                var newRow = table.insertRow();
+                for (var j in table_data[i]) {
                     var cell = newRow.insertCell();
-                    cell.innerHTML = "<button>Mark as unsolved</button>";
+                    cell.innerHTML = table_data[i][j];
+                    if (j == "responsible_worker") {
+                        var id = table_data[i]['id'];
+                        var inner = `
+                            <select id="select_${id}">`;
+                        for (var worker_i in workers_data) {
+                            var worker = workers_data[worker_i];
+                            console.log(worker);
+                            inner += `<option value="${worker['login']}">${worker['login']} (${worker['secondname']})</option>`;
+                        }
+
+                        inner += `</select>
+                        <button onclick="assignWorker('${put_url}', ${id})">Assign to worker</button>
+                        `;
+
+                        cell.outerHTML = '<td>' + inner + '</td>';
+                    } else {
+                        cell.outerHTML = '<td>' + table_data[i][j] + '</td>';
+                    }
                 }
             }
+        }
 
+        function reqListenerUnsolved(event) {
+            var data = JSON.parse(this.responseText);
+            var table = document.getElementById("unsolved-table")
+            table.innerHTML='';
+            if (data.length > 0) {
+                var header = table.createTHead();
+                var hrow = header.insertRow();
+                for (k in data[0]) {
+                    var cell = hrow.insertCell();
+                    cell.outerHTML = '<th>' + k + '</th>';
+                }
+                var cell = hrow.insertCell();
+                cell.outerHTML = '<th>Solve</th>';
+            } else {
+                var placeholder = document.getElementById("unsolved-placeholder");
+                placeholder.innerHTML = "No unsolved problems to show";
+            }
+            for (var i = 0; i < data.length; i++) {
+                var newRow = table.insertRow();
+                for (var j in data[i]) {
+                    var cell = newRow.insertCell();
+                    cell.innerHTML = data[i][j];
+                }
+                var cell = newRow.insertCell();
+                cell.innerHTML = "<button>Mark as solved</button>";
+            }
+        }
+
+        function reqListenerSolved(event) {
+            var data = JSON.parse(this.responseText);
+            var table = document.getElementById("solved-table")
+            table.innerHTML='';
+            if (data.length > 0) {
+                var header = table.createTHead();
+                var hrow = header.insertRow();
+                for (var k in data[0]) {
+                    var cell = hrow.insertCell();
+                    cell.outerHTML = '<th>' + k + '</th>';
+                }
+                var cell = hrow.insertCell();
+                cell.outerHTML = '<th>Revert to unsolved</th>';
+            } else {
+                var placeholder = document.getElementById("solved-placeholder");
+                placeholder.innerHTML = "No solved problems to show";
+            }
+            for (var i = 0; i < data.length; i++) {
+                var newRow = table.insertRow();
+                for (var j in data[i]) {
+                    var cell = newRow.insertCell();
+                    cell.innerHTML = data[i][j];
+                }
+                var cell = newRow.insertCell();
+                cell.innerHTML = "<button>Mark as unsolved</button>";
+            }
+        }
+
+
+
+        function queryTable(request, reqListener) {
             var oReq = new XMLHttpRequest();
-            oReq.addEventListener('load', reqListenerSolved);
+            oReq.addEventListener('load', reqListener);
             oReq.open("GET", request);
             oReq.send();
         }
 
         function queryTables() {
-            queryUnsolvedTable(unsolved_url);
-            querySolvedTable(solved_url);
+            console.log('query tables');
+            queryTable(unassigned_url, reqListenerUnassigned);
+            queryTable(unsolved_url, reqListenerUnsolved);
+            queryTable(solved_url, reqListenerSolved);
         }
 
         function setUsername(request) {
@@ -114,21 +183,31 @@
             log out
         </button>
     </header>
+    <div id="unassigned-container">
+        <div style="text-align: center; font-weight: 700; font-size: 20px; padding-bottom: 5px;">
+            <label for="unassigned-table" style="margin: auto;">Unassigned problems list</label>
+        </div>
+        <div id="unassigned-placeholder" style="text-align: center;"></div>
+        <table id="unassigned-table">
+        </table>
+    </div>
+    <br>
+    <br>
     <div id="unsolved-container">
         <div style="text-align: center; font-weight: 700; font-size: 20px; padding-bottom: 5px;">
-            <label for="unsolved" style="margin: auto;">Unsolved problems list</label>
+            <label for="unsolved-table" style="margin: auto;">Unsolved problems list</label>
         </div>
+        <div id="unsolved-placeholder" style="text-align: center;"></div>
         <table id="unsolved-table">
         </table>
     </div>
     <br>
     <br>
-    <br>
-    <br>
     <div id="solved-container">
         <div style="text-align: center; font-weight: 700; font-size: 20px; padding-bottom: 5px;">
-            <label for="solved" style="margin: auto;">Solved problems list</label>
+            <label for="solved-table" style="margin: auto;">Solved problems list</label>
         </div>
+        <div id="solved-placeholder" style="text-align: center;"></div>
         <table id="solved-table">
         </table>
     </div>

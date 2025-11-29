@@ -61,7 +61,7 @@ app.post('/user', async function(req, res) {
         var author = row_result['firstname'] + ' ' + row_result['secondname'] + ' ' + row_result['lastname'];
         var result = await pgPool.query(
             `INSERT INTO problems (id, title, description, author, note, status, author_login, responsible_worker)
-            VALUES ($1, $2, $3, $4, '', 'unsolved', $5, NULL) RETURNING *`,
+            VALUES ($1, $2, $3, $4, '', 'unassigned', $5, NULL) RETURNING *`,
             [
                 problem_id, 
                 req.body.problemtitle, 
@@ -174,6 +174,30 @@ app.get('/user', function(req, res) {
     res.sendFile(path.join(__dirname, 'public', 'user.html'));
 })
 
+app.get('/user/unsolved', async function(req, res) { // норм что async? ###############################################################
+    console.log('unsolved requested by', req.session.login);
+    try {
+        var result = await pgPool.query(`SELECT * FROM problems WHERE (status = 'unsolved' OR status = 'unassigned') AND author_login = '${req.session.login}'`);
+
+        res.end(JSON.stringify(result.rows));
+    } catch (error) {
+        console.log('error: ', error.message);
+        res.status(500).json(error.message);
+    }
+})
+
+app.get('/user/solved', async function(req, res) { // норм что async? ###############################################################
+    console.log('solved requested by', req.session.login);
+    try {
+        var result = await pgPool.query(`SELECT * FROM problems WHERE status = 'solved' AND author_login = '${req.session.login}'`);
+
+        res.end(JSON.stringify(result.rows));
+    } catch (error) {
+        console.log('error: ', error.message);
+        res.status(500).json(error.message);
+    }
+})
+
 app.get('/auth', function(req, res) {
     res.sendFile(path.join(__dirname, 'auth.html'));
 })
@@ -182,6 +206,7 @@ app.get('/register', function(req, res) {
     res.sendFile(path.join(__dirname, 'public', 'register.html'));
 })
 
+// TODO Добавить защиту чтобы нельзя было прийти по admin.html ####################################################################################################
 app.get('/admin', function(req, res) {
     var login = req.session.login || '';
     if (login != 'admin') {
@@ -190,6 +215,43 @@ app.get('/admin', function(req, res) {
     }
     console.log('admin requested admin.html');
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+})
+
+app.get('/admin/unassigned', async function(req, res) { // норм что async? ###############################################################
+    console.log('unassigned requested by', req.session.login);
+    try {
+        var table_result = await pgPool.query(`SELECT * FROM problems WHERE status = 'unassigned'`);
+        var workers_result = await pgPool.query(`SELECT login, secondname FROM workers`);
+
+        res.end(JSON.stringify([table_result.rows, workers_result.rows]));
+    } catch (error) {
+        console.log('error: ', error.message);
+        res.status(500).json(error.message);
+    }
+})
+
+app.get('/admin/unsolved', async function(req, res) { // норм что async? ###############################################################
+    console.log('unsolved requested by', req.session.login);
+    try {
+        var result = await pgPool.query(`SELECT * FROM problems WHERE status = 'unsolved'`);
+
+        res.end(JSON.stringify(result.rows));
+    } catch (error) {
+        console.log('error: ', error.message);
+        res.status(500).json(error.message);
+    }
+})
+
+app.get('/admin/solved', async function(req, res) { // норм что async? ###############################################################
+    console.log('solved requested by', req.session.login);
+    try {
+        var result = await pgPool.query(`SELECT * FROM problems WHERE status = 'solved'`);
+
+        res.end(JSON.stringify(result.rows));
+    } catch (error) {
+        console.log('error: ', error.message);
+        res.status(500).json(error.message);
+    }
 })
 
 app.get('/logout', function(req, res) {
@@ -209,54 +271,19 @@ app.get('/get_login', function(req, res) {
     res.end(JSON.stringify({login: req.session.login}));
 })
 
-app.get('/unsolved/admin', async function(req, res) { // норм что async? ###############################################################
-    console.log('unsolved requested by', req.session.login);
+app.put('/admin/put', function(req, res) {
+    console.log('assigning: ', req.body);
     try {
-        var result = await pgPool.query(`SELECT * FROM problems WHERE status = 'unsolved'`);
+        var result = pgPool.query(`UPDATE problems SET responsible_worker = '${req.body.worker}', status = 'unsolved' WHERE id = ${req.body.id}`);
 
-        res.end(JSON.stringify(result.rows));
+        res.status(200).send();
     } catch (error) {
         console.log('error: ', error.message);
         res.status(500).json(error.message);
     }
+    res.status(200); // TODO передлеать
 })
 
-app.get('/unsolved/user', async function(req, res) { // норм что async? ###############################################################
-    console.log('unsolved requested by', req.session.login);
-    try {
-        var result = await pgPool.query(`SELECT * FROM problems WHERE status = 'unsolved' AND author_login = '${req.session.login}'`);
-
-        res.end(JSON.stringify(result.rows));
-    } catch (error) {
-        console.log('error: ', error.message);
-        res.status(500).json(error.message);
-    }
-})
-
-
-app.get('/solved/admin', async function(req, res) { // норм что async? ###############################################################
-    console.log('solved requested by', req.session.login);
-    try {
-        var result = await pgPool.query(`SELECT * FROM problems WHERE status = 'solved'`);
-
-        res.end(JSON.stringify(result.rows));
-    } catch (error) {
-        console.log('error: ', error.message);
-        res.status(500).json(error.message);
-    }
-})
-
-app.get('/solved/user', async function(req, res) { // норм что async? ###############################################################
-    console.log('solved requested by', req.session.login);
-    try {
-        var result = await pgPool.query(`SELECT * FROM problems WHERE status = 'solved' AND author_login = '${req.session.login}'`);
-
-        res.end(JSON.stringify(result.rows));
-    } catch (error) {
-        console.log('error: ', error.message);
-        res.status(500).json(error.message);
-    }
-})
 
 app.get('/test', function(req, res) {
     console.log('test');
