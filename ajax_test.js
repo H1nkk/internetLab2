@@ -4,7 +4,7 @@ fetch('/seecar', {
     headers: {
         'Content-Type': 'application/json; charset=utf-8'
     },
-    body: JSON.stringify(car)
+    body: JSON.stringify([car])
 }
 )
     .then(response => response.json())

@@ -5,11 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
     <title>Worker's page</title>
+    <script>
+        var url = "http://localhost:3000/logout";
+
+        function logout(request) {
+
+            var oReq = new XMLHttpRequest();
+            oReq.open("GET", request);
+            oReq.onload = function() {
+                window.location.href = '/auth';
+            }
+            oReq.send();
+        }
+    </script>
 </head>
 <body style="background-color: rgb(46, 55, 58);">
     <header style="text-align: right;">
         User: 
-        <button onclick="toAuth();"> <!-- TODO здесь надо перекинуть на auth.html при onclick -->
+        <button onclick="logout(url);"> <!-- TODO здесь надо перекинуть на auth.html при onclick -->
             log out
         </button>
     </header>
