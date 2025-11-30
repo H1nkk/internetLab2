@@ -46,35 +46,31 @@ app.use(expressSession({
     cookie: { maxAge: 60 * 60 * 1000 } // 1 час
 }))
 
-app.post('/user', async function(req, res) {
+app.put('/user/put_problem', async function(req, res) {
     try {
         console.log("new problem req: ", req.body);
         var id_result = await pgPool.query('SELECT MAX(id) FROM problems');
-        console.log(id_result.rows[0]);
-        var prev_id = parseInt(id_result.rows[0].max);
+        var prev_id = parseInt(id_result.rows[0].max) || 0;
         var problem_id = prev_id + 1;
 
         var login = req.session.login;
         var row_result = (await pgPool.query(`SELECT * FROM users WHERE login ='${login}'`)).rows[0];
-        console.log(row_result);
-        var {firstname, secondname, lastname} = req.body;
         var author = row_result['firstname'] + ' ' + row_result['secondname'] + ' ' + row_result['lastname'];
         var result = await pgPool.query(
             `INSERT INTO problems (id, title, description, author, note, status, author_login, responsible_worker)
             VALUES ($1, $2, $3, $4, '', 'unassigned', $5, NULL) RETURNING *`,
             [
                 problem_id, 
-                req.body.problemtitle, 
-                req.body.problemdescription, 
+                req.body.title, 
+                req.body.description, 
                 author, 
                 req.session.login
             ]
         );
 
-        res.status(200);
-        res.redirect('/user');
+        res.status(200).end(`put problem id#${problem_id} successfully`);
     } catch (error) {
-        res.status(500).json('Не удалось создать проблему: ' + error.message);
+        res.status(500).json('Не удалось создать проблему: ' + error.message); // TODO надо пересмотреть все res.status().. ##########################################
         console.log("error: ", error.message);
     }
 })
@@ -113,7 +109,6 @@ app.post('/register', async function(req, res) {
 
         res.status(200);
         res.end(JSON.stringify({status: "ok", redirect: "/auth"}));
-        res.redirect('/auth');
     } catch (error) {
         res.status(500).json('Не удалось создать проблему: ' + error.message);
         console.log('error: ', error.message);
@@ -161,6 +156,18 @@ app.post('/check_login', async function(req, res) {
     }
 })
 
+app.get('/admin_check', function(req, res) {
+    try {
+        if (req.session.login != admin_login) {
+            res.end(JSON.stringify({status: "not ok"}));
+        } else {
+            res.end(JSON.stringify({status: "ok"}));
+        }
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).send('server error');
+    }
+})
 app.get('/user', function(req, res) {
     res.sendFile(path.join(__dirname, 'public', 'user.html'));
 })
@@ -301,23 +308,12 @@ app.put('/worker/put', function(req, res) {
     console.log('assigning: ', req.body);
     try {
         var result = pgPool.query(`UPDATE problems SET note = '${req.body.note}', status = 'solved' WHERE id = ${req.body.id}`);
-
         res.status(200).send('ok');
     } catch (error) {
         console.log('error: ', error.message);
         res.status(500).json(error.message);
     }
     res.status(200); // TODO передлеать ??
-})
-app.get('/test', function(req, res) {
-    console.log('test');
-    res.end(JSON.stringify([{id : "534", car: "mbw"}]));
-})
-
-app.get('/cook', function(req, res) {
-    req.session.number = (req.session.number + 1) || 1;
-    req.session.gg = "dsa";
-    res.end("You read this", req.session.number, "times");
 })
 
 const PORT = 3000;

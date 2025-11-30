@@ -10,75 +10,83 @@
         var get_login_url = "http://localhost:3000/get_login";
         var unsolved_url = "http://localhost:3000/user/unsolved";
         var solved_url = "http://localhost:3000/user/solved";
+        var put_url = "http://localhost:3000/user/put_problem";
 
-        function queryUnsolvedTable(request) {
-            function reqListenerUnsolved(event) {
-                var data = JSON.parse(this.responseText);
-                var table = document.getElementById("unsolved-table")
-                table.innerHTML='';
-                if (data.length > 0) {
-                    var hrow = table.insertRow();
-                    var titleCell = hrow.insertCell();
-                    titleCell.outerHTML = '<th>Title</th>';
+        function reqListenerUnsolved(event) {
+            var data = JSON.parse(this.responseText);
+            var table = document.getElementById("unsolved-table")
+            table.innerHTML='';
+            if (data.length > 0) {
+                var hrow = table.insertRow();
+                var titleCell = hrow.insertCell();
+                titleCell.outerHTML = '<th>Title</th>';
 
-                    var descriptionCell = hrow.insertCell();
-                    descriptionCell.outerHTML = '<th>Description</th>';
-                }
-                for (var i = 0; i < data.length; i++) {
-                    var newRow = table.insertRow();
-                    var titleCell = newRow.insertCell();
-                    titleCell.innerHTML = data[i]['title'];
+                var descriptionCell = hrow.insertCell();
+                descriptionCell.outerHTML = '<th>Description</th>';
 
-                    var descriptionCell = newRow.insertCell();
-                    descriptionCell.innerHTML = data[i]['description'];
-                }
+                
+
+                var placeholder = document.getElementById("unsolved-placeholder");
+                placeholder.innerHTML = "";
+            } else {
+                var placeholder = document.getElementById("unsolved-placeholder");
+                placeholder.innerHTML = "No unsolved problems to show";
             }
-            var oReq = new XMLHttpRequest();
-            oReq.addEventListener('load', reqListenerUnsolved);
-            oReq.open("GET", request);
-            oReq.send();
+            for (var i = 0; i < data.length; i++) {
+                var newRow = table.insertRow();
+                var titleCell = newRow.insertCell();
+                titleCell.innerHTML = data[i]['title'];
+
+                var descriptionCell = newRow.insertCell();
+                descriptionCell.innerHTML = "<pre style='font-family: sans-serif; margin: 0'>" + data[i]['description'] + "</pre>";
+
+            }
         }
 
-        function querySolvedTable(request) {
-            function reqListenerSolved(event) {
-                var data = JSON.parse(this.responseText);
-                var table = document.getElementById("solved-table")
-                table.innerHTML='';
-                if (data.length > 0) {
-                    var hrow = table.insertRow();
-                    var titleCell = hrow.insertCell();
-                    titleCell.outerHTML = '<th>Title</th>';
+        function reqListenerSolved(event) {
+            var data = JSON.parse(this.responseText);
+            var table = document.getElementById("solved-table")
+            table.innerHTML='';
+            if (data.length > 0) {
+                var hrow = table.insertRow();
+                var titleCell = hrow.insertCell();
+                titleCell.outerHTML = '<th>Title</th>';
 
-                    var descriptionCell = hrow.insertCell();
-                    descriptionCell.outerHTML = '<th>Description</th>';
+                var descriptionCell = hrow.insertCell();
+                descriptionCell.outerHTML = '<th>Description</th>';
 
-                    var noteCell = hrow.insertCell();
-                    noteCell.outerHTML = '<th>Tech support note</th>';
+                var noteCell = hrow.insertCell();
+                noteCell.outerHTML = '<th>Tech support note</th>';
 
-                }
-                for (var i = 0; i < data.length; i++) {
-                    var newRow = table.insertRow();
-                    var titleCell = newRow.insertCell();
-                    titleCell.innerHTML = data[i]['title'];
-
-                    var descriptionCell = newRow.insertCell();
-                    descriptionCell.innerHTML = data[i]['description'];
-
-                    var noteCell = newRow.insertCell();
-                    noteCell.innerHTML = data[i]['note'];
-                }
+                var placeholder = document.getElementById("solved-placeholder");
+                placeholder.innerHTML = "";
+            } else {
+                var placeholder = document.getElementById("solved-placeholder");
+                placeholder.innerHTML = "No solved problems to show";
             }
+            for (var i = 0; i < data.length; i++) {
+                var newRow = table.insertRow();
+                var titleCell = newRow.insertCell();
+                titleCell.innerHTML = data[i]['title'];
 
+                var descriptionCell = newRow.insertCell();
+                descriptionCell.innerHTML = "<pre style='font-family: sans-serif; margin: 0'>" + data[i]['description'] + "</pre>";
+
+                var noteCell = newRow.insertCell();
+                noteCell.innerHTML = "<pre style='font-family: sans-serif; margin: 0'>" + data[i]['note'] + "</pre>";
+            }
+        }
+
+        function queryTable(request, reqListener) {
             var oReq = new XMLHttpRequest();
-            oReq.addEventListener('load', reqListenerSolved);
+            oReq.addEventListener('load', reqListener);
             oReq.open("GET", request);
             oReq.send();
-
         }
 
         function queryTables() {
-            queryUnsolvedTable(unsolved_url);
-            querySolvedTable(solved_url);
+            queryTable(unsolved_url, reqListenerUnsolved);
+            queryTable(solved_url, reqListenerSolved);
         }
 
         function setUsername(request) {
@@ -96,8 +104,20 @@
             oReq.send();
         }
 
-        document.addEventListener("DOMContentLoaded", queryTables());
-        document.addEventListener("DOMContentLoaded", setUsername(get_login_url));
+        function submitProblem(request) {
+            var oReq = new XMLHttpRequest();
+
+            oReq.addEventListener('load', queryTables); // TODO какая разница между queryTables и queryTables()? ############################################################
+                                                        // queryTables() - результат выполнения queryTables, а не функция
+            oReq.open("PUT", request);
+            oReq.setRequestHeader('Content-Type', 'application/json'); // что этьо такое ?? ############################################################
+            oReq.send(JSON.stringify({ title : document.getElementById("problem-title").value, description: document.getElementById("problem-description").value }));
+            document.getElementById("problem-title").value = '';
+            document.getElementById("problem-description").value = '';
+        }
+
+        document.addEventListener("DOMContentLoaded", queryTables);
+        document.addEventListener("DOMContentLoaded", function() {setUsername(get_login_url)});
         
         function logout(request) {
             var oReq = new XMLHttpRequest();
@@ -117,7 +137,6 @@
         </button>
     </header>
     <div id="form-container" style="width: fit-content; height: fit-content; margin: auto;text-align: center; font-weight: 700; font-size: 20px; padding-bottom: 5px;">
-        <form method="post">
             <label for="problem-title">Problem title: </label>
             <br>
             <input type="text" id="problem-title" name="problemtitle" placeholder="Briefly describe your problem..." required>
@@ -131,11 +150,10 @@
             <br>
 
             <div id="button-container" style="text-align: center;">
-                <button>
+                <button onclick="submitProblem(put_url)">
                     Submit
                 </button>
             </div>
-        </form>
     </div>
     <br>
     <br>
@@ -143,6 +161,7 @@
         <div style="text-align: center; font-weight: 700; font-size: 20px; padding-bottom: 5px;">
             <label for="unsolved" style="margin: auto;">My unsolved problems list</label>
         </div>
+        <div id="unsolved-placeholder" style="text-align: center;"></div>
         <table id="unsolved-table">
         </table>
     </div>
@@ -154,6 +173,7 @@
         <div style="text-align: center; font-weight: 700; font-size: 20px; padding-bottom: 5px;">
             <label for="solved" style="margin: auto;">My solved problems list</label>
         </div>
+        <div id="solved-placeholder" style="text-align: center;"></div>
         <table id="solved-table">
         </table>
     </div>

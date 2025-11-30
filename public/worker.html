@@ -37,11 +37,16 @@
                 var header = table.createTHead();
                 var hrow = header.insertRow();
                 for (k in data[0]) {
+                    if (k == 'id') {
+                        continue;
+                    }
                     var cell = hrow.insertCell();
                     cell.outerHTML = '<th>' + k.replace("_", " ") + '</th>';
                 }
                 var cell = hrow.insertCell();
                 cell.outerHTML = '<th>mark as solved</th>';
+                var placeholder = document.getElementById("unsolved-placeholder");
+                placeholder.innerHTML = "";
             } else {
                 var placeholder = document.getElementById("unsolved-placeholder");
                 placeholder.innerHTML = "No unsolved problems to show";
@@ -49,9 +54,15 @@
             for (var i = 0; i < data.length; i++) {
                 var newRow = table.insertRow();
                 for (var j in data[i]) {
-                    if (j == 'note') {
+                    if (j == 'id') {
+                        continue;
+                    } else if (j == 'note') {
                         var cell = newRow.insertCell();
                         cell.innerHTML = `<textarea id="textarea_${data[i]['id']}"></textarea>`;
+                    } else if (j == 'description') {
+                        var cell = newRow.insertCell();
+                        cell.innerHTML = "<pre style='font-family: sans-serif; margin: 0'>" + data[i][j] + "</pre>";
+
                     } else {
                         var cell = newRow.insertCell();
                         cell.innerHTML = data[i][j];
@@ -70,9 +81,14 @@
                 var header = table.createTHead();
                 var hrow = header.insertRow();
                 for (var k in data[0]) {
+                    if (k == 'id') {
+                        continue;
+                    }
                     var cell = hrow.insertCell();
                     cell.outerHTML = '<th>' + k.replace("_", " ") + '</th>';
                 }
+                var placeholder = document.getElementById("solved-placeholder");
+                placeholder.innerHTML = "";
             } else {
                 var placeholder = document.getElementById("solved-placeholder");
                 placeholder.innerHTML = "No solved problems to show";
@@ -80,8 +96,15 @@
             for (var i = 0; i < data.length; i++) {
                 var newRow = table.insertRow();
                 for (var j in data[i]) {
-                    var cell = newRow.insertCell();
-                    cell.innerHTML = data[i][j];
+                    if (j == 'id') {
+                        continue;
+                    } else if (j == 'description' || j == 'note') {
+                        var cell = newRow.insertCell();
+                        cell.innerHTML = "<pre style='font-family: sans-serif; margin: 0'>" + data[i][j] + "</pre>";
+                    } else {
+                        var cell = newRow.insertCell();
+                        cell.innerHTML = data[i][j];
+                    }
                 }
             }
         }
@@ -122,8 +145,8 @@
             oReq.send();
         }
 
-        document.addEventListener("DOMContentLoaded", queryTables());
-        document.addEventListener("DOMContentLoaded", setUsername(get_login_url));
+        document.addEventListener("DOMContentLoaded", queryTables);
+        document.addEventListener("DOMContentLoaded", function() {setUsername(get_login_url)});
 
     </script>
 </head>

@@ -6,12 +6,30 @@
     <link rel="stylesheet" href="styles.css">
     <title>Admin's page</title>
     <script>
+        var admin_check_url = "http://localhost:3000/admin_check";
         var logout_url = "http://localhost:3000/logout";
         var get_login_url = "http://localhost:3000/get_login";
         var unassigned_url = "http://localhost:3000/admin/unassigned";
         var unsolved_url = "http://localhost:3000/admin/unsolved";
         var solved_url = "http://localhost:3000/admin/solved";
         var put_url = "http://localhost:3000/admin/put";
+
+        function adminCheck(request, onSuccess) {
+            function reqListenerCheck() {
+                var data = JSON.parse(this.responseText);
+                if (data.status != 'ok') {
+                    alert("Only admin can see this page");
+                    window.location.href = '/auth';
+                } else {
+                    onSuccess();
+                }
+            }
+
+            var oReq = new XMLHttpRequest();
+            oReq.addEventListener('load', reqListenerCheck);
+            oReq.open("GET", request);
+            oReq.send();
+        }
 
         // TODO заменить все кавычки на единый стиль? ##############################################################################################################################
         function assignWorker(request, id) {
@@ -76,6 +94,8 @@
                         `;
 
                         cell.outerHTML = '<td>' + inner + '</td>';
+                    } else if (j == "description") {
+                        cell.outerHTML = "<td><pre style='font-family: sans-serif; margin: 0'>" + table_data[i][j] + "</pre></td>";
                     } else {
                         cell.outerHTML = '<td>' + table_data[i][j] + '</td>';
                     }
@@ -95,7 +115,8 @@
                     var cell = hrow.insertCell();
                     cell.outerHTML = '<th>' + k.replace("_", " ") + '</th>';
                 }
-
+                var placeholder = document.getElementById("unsolved-placeholder");
+                placeholder.innerHTML = "";
             } else {
                 var placeholder = document.getElementById("unsolved-placeholder");
                 placeholder.innerHTML = "No unsolved problems to show";
@@ -105,7 +126,11 @@
                 for (var j in data[i]) {
                     if (j == 'note') continue;
                     var cell = newRow.insertCell();
-                    cell.innerHTML = data[i][j];
+                    if (j == 'description') {
+                        cell.innerHTML = "<pre style='font-family: sans-serif; margin: 0'>" + data[i][j] + "</pre";
+                    } else {
+                        cell.innerHTML = data[i][j];
+                    }
                 }
 
             }
@@ -122,7 +147,8 @@
                     var cell = hrow.insertCell();
                     cell.outerHTML = '<th>' + k.replace("_", " ") + '</th>';
                 }
-
+                var placeholder = document.getElementById("solved-placeholder");
+                placeholder.innerHTML = "";
             } else {
                 var placeholder = document.getElementById("solved-placeholder");
                 placeholder.innerHTML = "No solved problems to show";
@@ -131,13 +157,15 @@
                 var newRow = table.insertRow();
                 for (var j in data[i]) {
                     var cell = newRow.insertCell();
-                    cell.innerHTML = data[i][j];
+                    if (j == 'description' || j == 'note') {
+                        cell.innerHTML = "<pre style='font-family: sans-serif; margin: 0'>" + data[i][j] + "</pre";
+                    } else {
+                        cell.innerHTML = data[i][j];
+                    }
                 }
 
             }
         }
-
-
 
         function queryTable(request, reqListener) {
             var oReq = new XMLHttpRequest();
@@ -167,9 +195,11 @@
             oReq.open("GET", request);
             oReq.send();
         }
-
-        document.addEventListener("DOMContentLoaded", queryTables());
-        document.addEventListener("DOMContentLoaded", setUsername(get_login_url));
+        
+        adminCheck(admin_check_url, function() {
+            queryTables();
+            setUsername(get_login_url);
+        })
 
         function logout(request) {
             var oReq = new XMLHttpRequest();
@@ -181,7 +211,7 @@
         }
     </script>
 </head>
-<body style="background-color: rgb(46, 55, 58);">
+<body style="background-color: rgb(142, 179, 191);">
     <header style="text-align: right;">
         Admin: <span id="username"></span>
         <button onclick="logout(logout_url);"> <!-- TODO здесь надо перекинуть на auth.html при onclick -->
