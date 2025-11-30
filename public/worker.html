@@ -7,9 +7,98 @@
     <title>Worker's page</title>
     <script>
         var url = "http://localhost:3000/logout";
+        var get_login_url = "http://localhost:3000/get_login";
+        var unsolved_url = "http://localhost:3000/worker/unsolved";
+        var solved_url = "http://localhost:3000/worker/solved";
+        var put_url = "http://localhost:3000/worker/put";
+
+        function solveProblem(request, problem_id) {
+            function reqListenerProblem(event) {
+                if (this.status === 200) {
+                    queryTables();
+                } else {
+                    console.error('error updating visible tables after assigning');
+                }
+            }
+            var textarea = document.getElementById(`textarea_${problem_id}`);
+
+            var oReq = new XMLHttpRequest();
+            oReq.addEventListener('load', reqListenerProblem);
+            oReq.open("PUT", request);
+            oReq.setRequestHeader('Content-Type', 'application/json'); // TODO что это значит
+            oReq.send(JSON.stringify({ id : problem_id, note: textarea.value }));
+        }
+
+        function reqListenerUnsolved(event) { // TODO зачем event? ####################################################################################
+            var data = JSON.parse(this.responseText);
+            var table = document.getElementById("unsolved-table")
+            table.innerHTML='';
+            if (data.length > 0) {
+                var header = table.createTHead();
+                var hrow = header.insertRow();
+                for (k in data[0]) {
+                    var cell = hrow.insertCell();
+                    cell.outerHTML = '<th>' + k.replace("_", " ") + '</th>';
+                }
+                var cell = hrow.insertCell();
+                cell.outerHTML = '<th>mark as solved</th>';
+            } else {
+                var placeholder = document.getElementById("unsolved-placeholder");
+                placeholder.innerHTML = "No unsolved problems to show";
+            }
+            for (var i = 0; i < data.length; i++) {
+                var newRow = table.insertRow();
+                for (var j in data[i]) {
+                    if (j == 'note') {
+                        var cell = newRow.insertCell();
+                        cell.innerHTML = `<textarea id="textarea_${data[i]['id']}"></textarea>`;
+                    } else {
+                        var cell = newRow.insertCell();
+                        cell.innerHTML = data[i][j];
+                    }
+                }
+                var cell = newRow.insertCell();
+                cell.innerHTML = `<button onclick="solveProblem('${put_url}', ${data[i]['id']})">Mark as solved</button>`;
+            }
+        }
+
+        function reqListenerSolved(event) {
+            var data = JSON.parse(this.responseText);
+            var table = document.getElementById("solved-table")
+            table.innerHTML='';
+            if (data.length > 0) {
+                var header = table.createTHead();
+                var hrow = header.insertRow();
+                for (var k in data[0]) {
+                    var cell = hrow.insertCell();
+                    cell.outerHTML = '<th>' + k.replace("_", " ") + '</th>';
+                }
+            } else {
+                var placeholder = document.getElementById("solved-placeholder");
+                placeholder.innerHTML = "No solved problems to show";
+            }
+            for (var i = 0; i < data.length; i++) {
+                var newRow = table.insertRow();
+                for (var j in data[i]) {
+                    var cell = newRow.insertCell();
+                    cell.innerHTML = data[i][j];
+                }
+            }
+        }
+
+        function queryTable(request, reqListener) {
+            var oReq = new XMLHttpRequest();
+            oReq.addEventListener('load', reqListener);
+            oReq.open("GET", request);
+            oReq.send();
+        }
+
+        function queryTables() {
+            queryTable(unsolved_url, reqListenerUnsolved);
+            queryTable(solved_url, reqListenerSolved);
+        }
 
         function logout(request) {
-
             var oReq = new XMLHttpRequest();
             oReq.open("GET", request);
             oReq.onload = function() {
@@ -17,38 +106,40 @@
             }
             oReq.send();
         }
+        
+        function setUsername(request) {
+            console.log(request);
+
+            function reqListenerUsername() {
+                var data = JSON.parse(this.responseText);
+                var username_span = document.getElementById("username");
+                username_span.innerHTML = data['login'];
+            }
+
+            var oReq = new XMLHttpRequest();
+            oReq.addEventListener('load', reqListenerUsername);
+            oReq.open("GET", request);
+            oReq.send();
+        }
+
+        document.addEventListener("DOMContentLoaded", queryTables());
+        document.addEventListener("DOMContentLoaded", setUsername(get_login_url));
+
     </script>
 </head>
 <body style="background-color: rgb(46, 55, 58);">
     <header style="text-align: right;">
-        User: 
+        Worker: <span id="username"></span>
         <button onclick="logout(url);"> <!-- TODO здесь надо перекинуть на auth.html при onclick -->
             log out
         </button>
     </header>
     <div id="unsolved-container">
         <div style="text-align: center; font-weight: 700; font-size: 20px; padding-bottom: 5px;">
-            <label for="unsolved" style="margin: auto;">My unsolved problems list</label>
+            <label for="unsolved-table" style="margin: auto;">My unsolved problems list</label>
         </div>
-        <table id="unsolved">
-            <tr>
-                <th>Problem id</th>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Author</th>
-                <th>Solve</th>
-            </tr>
-            <tr>
-                <td>1</td>
-                <td>Input doesn't work</td>
-                <td>When i try to input smt it doesnt allow me to :(</td>
-                <td>Ivan Ivanov Ivanovich</td>
-                <td>
-                    <div id="button-container" style="text-align: center;">
-                        <button>Mark as solved</button>
-                    </div>
-                </td>
-            </tr>
+        <div id="unsolved-placeholder" style="text-align: center;"></div>
+        <table id="unsolved-table">
         </table>
     </div>
     <br>
@@ -57,27 +148,10 @@
     <br>
     <div id="solved-container">
         <div style="text-align: center; font-weight: 700; font-size: 20px; padding-bottom: 5px;">
-            <label for="solved" style="margin: auto;">My solved problems list</label>
+            <label for="solved-table" style="margin: auto;">My solved problems list</label>
         </div>
-        <table id="solved">
-            <tr>
-                <th>Problem id</th>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Author</th>
-                <th>Revert to unsolved</th>
-            </tr>
-            <tr>
-                <td>2</td>
-                <td>Submit button doenst work</td>
-                <td>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</td>
-                <td>Ivan Petrov Ivanovich</td>
-                <td>
-                    <div id="button-container" style="text-align: center;">
-                        <button>Mark as unsolved</button>
-                    </div>
-                </td>
-            </tr>
+        <div id="solved-placeholder" style="text-align: center;"></div>
+        <table id="solved-table">
         </table>
     </div>
 </body>

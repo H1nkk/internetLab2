@@ -49,10 +49,10 @@ app.use(expressSession({
 app.post('/user', async function(req, res) {
     try {
         console.log("new problem req: ", req.body);
-        var count_result = await pgPool.query('SELECT COUNT(*) FROM problems');
-        console.log("cres:", count_result);
-        var count = parseInt(count_result.rows[0].count);
-        var problem_id = count + 1;
+        var id_result = await pgPool.query('SELECT MAX(id) FROM problems');
+        console.log(id_result.rows[0]);
+        var prev_id = parseInt(id_result.rows[0].max);
+        var problem_id = prev_id + 1;
 
         var login = req.session.login;
         var row_result = (await pgPool.query(`SELECT * FROM users WHERE login ='${login}'`)).rows[0];
@@ -86,9 +86,10 @@ app.post('/register', async function(req, res) {
         var login = req.body.login;
         var count_result_users = await pgPool.query(`SELECT COUNT(*) FROM users WHERE login='${login}'`);
         var count_result_workers = await pgPool.query(`SELECT COUNT(*) FROM workers WHERE login='${login}'`);
-        if (parseInt(count_result_users.rows[0].count) > 0 || parseInt(count_result_workers.rows[0].count) > 0 || login == 'admin') {
+        if (parseInt(count_result_users.rows[0].count) > 0 || parseInt(count_result_workers.rows[0].count) > 0 || login == admin_login) {
 
-            res.status(500).json('error: неуникальный логин');
+            // TODO может тут надо res.status(???) ??????? #############################################################################################################
+            res.end(JSON.stringify({status: "This login is currently in use"})); // TODO в чем разница между .end И .send? ######################################################
             console.log('error: неуникальный логин');
             return;
         }
@@ -111,6 +112,7 @@ app.post('/register', async function(req, res) {
         );
 
         res.status(200);
+        res.end(JSON.stringify({status: "ok", redirect: "/auth"}));
         res.redirect('/auth');
     } catch (error) {
         res.status(500).json('Не удалось создать проблему: ' + error.message);
@@ -118,7 +120,7 @@ app.post('/register', async function(req, res) {
     }
 })
 
-app.post('/auth', async function(req, res) {
+app.post('/check_login', async function(req, res) {
     try {
         console.log("auth req: ", req.body);
         const login = req.body.login;
@@ -128,17 +130,16 @@ app.post('/auth', async function(req, res) {
         if (login == admin_login && password == admin_password) {
             // TODO тут надо менять куки навернооооооо #########################################
             req.session.login = login;
-            res.redirect('/admin.html');
+            res.end(JSON.stringify({status: 'ok', redirect: '/admin'}));
             return;
         }
 
         // worker check:
         const worker_count_result = await pgPool.query(`SELECT COUNT(*) FROM workers WHERE login = '${login}'`);
         if (parseInt(worker_count_result.rows[0].count) != 0) {
-            // TODO тут надо менять куки навернооооооо #########################################
             req.session.login = login;
+            res.end(JSON.stringify({status: 'ok', redirect: '/worker.html'})); // TODO мб сделать не .html??
 
-            res.redirect('/worker.html');
             return;
         }
 
@@ -147,23 +148,13 @@ app.post('/auth', async function(req, res) {
             // TODO тут надо менять куки #########################################
             req.session.login = login;
 
-            res.redirect('/user');
+            res.end(JSON.stringify({status: 'ok', redirect: '/user'}));
             return;
         }
 
         // переделать на ajax: #########################################
         console.log("invalid login or password");
-        res.send(`
-            <html>
-                <body>
-                    <script>
-                        alert('Неверно введены логин или пароль.');
-                        window.location.href='/auth';
-                    </script>
-
-                </body>
-            </html>
-            `);
+        res.send(JSON.stringify({status: "Invalid login or password"}));
     } catch (error) {
         console.log(error.message);
         res.status(500).send('server error');
@@ -198,18 +189,32 @@ app.get('/user/solved', async function(req, res) { // норм что async? ###
     }
 })
 
-app.get('/auth', function(req, res) {
-    res.sendFile(path.join(__dirname, 'auth.html'));
+app.get('/worker/unsolved', async function(req, res) { // норм что async? ###############################################################
+    console.log('unsolved requested by', req.session.login);
+    try {
+        var result = await pgPool.query(`SELECT id, title, description, author, note, author_login FROM problems WHERE status = 'unsolved' AND responsible_worker = '${req.session.login}'`);
+        res.end(JSON.stringify(result.rows));
+    } catch (error) {
+        console.log('error: ', error.message);
+        res.status(500).json(error.message);
+    }
 })
 
-app.get('/register', function(req, res) {
-    res.sendFile(path.join(__dirname, 'public', 'register.html'));
+app.get('/worker/solved', async function(req, res) { // норм что async? ###############################################################
+    console.log('solved requested by', req.session.login);
+    try {
+        var result = await pgPool.query(`SELECT id, title, description, author, note, author_login FROM problems WHERE status = 'solved' AND responsible_worker = '${req.session.login}'`);
+        res.end(JSON.stringify(result.rows));
+    } catch (error) {
+        console.log('error: ', error.message);
+        res.status(500).json(error.message);
+    }
 })
 
 // TODO Добавить защиту чтобы нельзя было прийти по admin.html ####################################################################################################
 app.get('/admin', function(req, res) {
     var login = req.session.login || '';
-    if (login != 'admin') {
+    if (login != admin_login) {
         res.status(403).json("only admin can see this page");
         return;
     }
@@ -254,6 +259,14 @@ app.get('/admin/solved', async function(req, res) { // норм что async? ##
     }
 })
 
+app.get('/auth', function(req, res) {
+    res.sendFile(path.join(__dirname, 'auth.html'));
+})
+
+app.get('/register', function(req, res) {
+    res.sendFile(path.join(__dirname, 'public', 'register.html'));
+})
+
 app.get('/logout', function(req, res) {
     console.log('logout');
     req.session.destroy(function(err) {
@@ -276,15 +289,26 @@ app.put('/admin/put', function(req, res) {
     try {
         var result = pgPool.query(`UPDATE problems SET responsible_worker = '${req.body.worker}', status = 'unsolved' WHERE id = ${req.body.id}`);
 
-        res.status(200).send();
+        res.status(200).send('ok');
     } catch (error) {
         console.log('error: ', error.message);
         res.status(500).json(error.message);
     }
-    res.status(200); // TODO передлеать
+    res.status(200); // TODO передлеать ??
 })
 
+app.put('/worker/put', function(req, res) {
+    console.log('assigning: ', req.body);
+    try {
+        var result = pgPool.query(`UPDATE problems SET note = '${req.body.note}', status = 'solved' WHERE id = ${req.body.id}`);
 
+        res.status(200).send('ok');
+    } catch (error) {
+        console.log('error: ', error.message);
+        res.status(500).json(error.message);
+    }
+    res.status(200); // TODO передлеать ??
+})
 app.get('/test', function(req, res) {
     console.log('test');
     res.end(JSON.stringify([{id : "534", car: "mbw"}]));

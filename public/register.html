@@ -5,26 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
     <title>User's page</title>
+    <script>
+        var register_url = "http://localhost:3000/register";
 
+        function queryRegisterResult(request) {
+            function reqListenerResult(event) {
+                var data = JSON.parse(this.responseText);
+                if (data.status == 'ok') {
+                    window.location.href = data.redirect;
+                } else {
+                    var error_container = document.getElementById("error-container");
+                    error_container.innerHTML = data.status;
+                }
+            }
+
+            var oReq = new XMLHttpRequest();
+            oReq.addEventListener('load', reqListenerResult);
+            oReq.open("POST", request);
+            oReq.setRequestHeader('Content-Type', 'application/json');
+            oReq.send(JSON.stringify({ 
+                firstname : document.getElementById("firstname").value, 
+                secondname : document.getElementById("secondname").value, 
+                lastname : document.getElementById("lastname").value, 
+                phone : document.getElementById("phone").value, 
+                login : document.getElementById("login").value, 
+                password: document.getElementById("password").value }));
+        }
+
+    </script>
 </head>
 <body style="background-color: rgb(147, 161, 165);">
     <div id="form-container" style="width: fit-content; height: fit-content; margin: auto;">
-        <form method="post">
+
             <label for="first-name">Your first name:</label>
             <br>
-            <input type="text" id="first-name" name="firstname" placeholder="Ivan" required>
+            <input type="text" id="firstname" name="firstname" placeholder="Ivan" required>
             <br>
             <br>
 
             <label for="second-name">Your second name:</label>
             <br>
-            <input type="text" id="second-name" name="secondname" placeholder="Ivanov" required>
+            <input type="text" id="secondname" name="secondname" placeholder="Ivanov" required>
             <br>
             <br>
 
             <label for="last-name">Your last name:</label>
             <br>
-            <input type="text" id="last-name" name="lastname" placeholder="Ivanovich" required>
+            <input type="text" id="lastname" name="lastname" placeholder="Ivanovich" required>
             <br>
             <br>
 
@@ -47,15 +74,15 @@
             <br>
 
             <div id="button-container" style="text-align: center;">
-                <button>
+                <button onclick="queryRegisterResult(register_url)">
                     Register
                 </button>
             </div>
-        </form>
-        <div id="error-container" style="color: rgb(110, 16, 30)">
-asdf
-        </div>
-    </div>
 
+    </div>
+    <br>
+    <div id="error-container" style="color: rgb(110, 16, 30); text-align: center;">
+asdf
+    </div>
 </body>
 </html>

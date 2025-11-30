@@ -1,5 +1,8 @@
-html {
+body {
     font-family: sans-serif;
+	word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
 }
 table {
 	width: 100%;
@@ -12,10 +15,11 @@ th {
 	padding: 5px;
 	background: #efefef;
 	border: 1px solid #dddddd;
+	min-width: 50px;
 }
 td {
 	border: 1px solid #dddddd;
-	padding: 5px;
+	padding: 10px;
 }
 .unsolved {
 	color: pink;

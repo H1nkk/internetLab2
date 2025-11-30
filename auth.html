@@ -4,10 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auth</title>
+    <script>
+
+        var login_url = "http://localhost:3000/check_login";
+
+        function queryLoginResult(request) {
+            function reqListenerResult(event) {
+                var data = JSON.parse(this.responseText);
+                if (data.status == 'ok') {
+                    window.location.href = data.redirect;
+                } else {
+                    var error_container = document.getElementById("error-container");
+                    error_container.innerHTML = data.status;
+                }
+            }
+
+            var oReq = new XMLHttpRequest();
+            oReq.addEventListener('load', reqListenerResult);
+            oReq.open("POST", request);
+            oReq.setRequestHeader('Content-Type', 'application/json');
+            oReq.send(JSON.stringify({ login : document.getElementById("login").value, password: document.getElementById("password").value }));
+        }
+
+    </script>
 </head>
 <body style="background-color: rgb(27, 49, 56);">
     <div id="form-container" style="width: fit-content; height: fit-content; margin: auto;">
-        <form method="post">
             <label for="login">Login:</label>
             <br>
             <input type="text" id="login" name="login" placeholder="" required>
@@ -21,17 +43,18 @@
             <br>
 
             <div id="button-container" style="text-align: center;">
-                <button>
+                <button onclick="queryLoginResult(login_url)">
                     Log in
                 </button>
                 <br>
                 <br>
             </div>
-        </form>
         <div style="text-align: center">
             <button id="regbutton">
                 Register
             </button>
+        </div>
+        <div id="error-container" style="color: rgb(201,89,106)">
         </div>
     </div>
 
