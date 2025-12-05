@@ -9,6 +9,26 @@
         var register_url = "http://localhost:3000/register";
 
         function queryRegisterResult(request) {
+            var firstname = document.getElementById("firstname").value;
+            var secondname = document.getElementById("secondname").value; 
+            var lastname = document.getElementById("lastname").value; 
+            var phone = document.getElementById("phone").value; 
+            var login = document.getElementById("login").value; 
+            var password = document.getElementById("password").value;
+
+            if (firstname == '' || secondname == '' || lastname == '' || phone == '' || login == '' || password == '') {
+                var error_container = document.getElementById("error-container");
+                error_container.innerHTML = "Please fill out all fields";
+                return;
+            }
+
+            var phoneRegex = /^\+?[0-9]{7,15}$/;
+            if (!phoneRegex.test(phone)) {
+                var error_container = document.getElementById("error-container");
+                error_container.innerHTML = "Phone number must contain only '+' and digits";
+                return;
+            }
+
             function reqListenerResult(event) {
                 var data = JSON.parse(this.responseText);
                 if (data.status == 'ok') {

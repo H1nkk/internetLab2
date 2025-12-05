@@ -3,8 +3,6 @@ const expressSession = require('express-session');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const pg = require('pg'); // что это
-const { json } = require('stream/consumers');
-const { log } = require('console');
 const pgSession = require('connect-pg-simple')(expressSession);
 
 const app = express();
@@ -23,8 +21,6 @@ const pgPool = new pg.Pool({
   password: 'root',
   port: 5433,
 });
-
-// module.exports = pgPool;
 
 pgPool.query('SELECT NOW()', function(err, res) {
     if (err) {
@@ -123,7 +119,6 @@ app.post('/check_login', async function(req, res) {
 
         // admin check:
         if (login == admin_login && password == admin_password) {
-            // TODO тут надо менять куки навернооооооо #########################################
             req.session.login = login;
             res.end(JSON.stringify({status: 'ok', redirect: '/admin'}));
             return;
@@ -133,21 +128,20 @@ app.post('/check_login', async function(req, res) {
         const worker_count_result = await pgPool.query(`SELECT COUNT(*) FROM workers WHERE login = '${login}'`);
         if (parseInt(worker_count_result.rows[0].count) != 0) {
             req.session.login = login;
-            res.end(JSON.stringify({status: 'ok', redirect: '/worker.html'})); // TODO мб сделать не .html??
+            res.end(JSON.stringify({status: 'ok', redirect: '/worker.html'})); // TODO мб сделать не .html?? --------- не, с /worker не работает
 
             return;
         }
 
         const user_count_result = await pgPool.query(`SELECT COUNT(*) FROM users WHERE login = '${login}'`);
         if (parseInt(user_count_result.rows[0].count) != 0) {
-            // TODO тут надо менять куки #########################################
             req.session.login = login;
 
             res.end(JSON.stringify({status: 'ok', redirect: '/user'}));
             return;
         }
 
-        // переделать на ajax: #########################################
+        // переделать на ajax:  DONE #########################################
         console.log("invalid login or password");
         res.send(JSON.stringify({status: "Invalid login or password"}));
     } catch (error) {

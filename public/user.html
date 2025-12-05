@@ -105,6 +105,20 @@
         }
 
         function submitProblem(request) {
+            var title = document.getElementById("problem-title").value;
+            var description = document.getElementById("problem-description").value;
+            if (title == '') {
+                var error_container = document.getElementById("error-container");
+                error_container.innerHTML = "Problem title cannot be empty";
+                return;
+            } else if (description == '') {
+                var error_container = document.getElementById("error-container");
+                error_container.innerHTML = "Problem description cannot be empty";
+                return;
+            } else {
+                var error_container = document.getElementById("error-container");
+                error_container.innerHTML = "";
+            }
             var oReq = new XMLHttpRequest();
 
             oReq.addEventListener('load', queryTables); // TODO какая разница между queryTables и queryTables()? ############################################################
@@ -154,6 +168,7 @@
                     Submit
                 </button>
             </div>
+            <div id="error-container" style="color: rgb(110, 16, 30); text-align: center;"></div>
     </div>
     <br>
     <br>
