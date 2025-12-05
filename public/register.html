@@ -25,7 +25,7 @@
             var phoneRegex = /^\+?[0-9]{7,15}$/;
             if (!phoneRegex.test(phone)) {
                 var error_container = document.getElementById("error-container");
-                error_container.innerHTML = "Phone number must contain only '+' and digits";
+                error_container.innerHTML = "Phone number must contain only '+' and digits (7-15 digits)";
                 return;
             }
 
