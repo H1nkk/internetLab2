@@ -119,6 +119,7 @@ app.post('/check_login', async function(req, res) {
 
         // admin check:
         if (login == admin_login && password == admin_password) {
+            console.log(login, "logged successfully");
             req.session.login = login;
             res.end(JSON.stringify({status: 'ok', redirect: '/admin'}));
             return;
@@ -127,17 +128,33 @@ app.post('/check_login', async function(req, res) {
         // worker check:
         const worker_count_result = await pgPool.query(`SELECT COUNT(*) FROM workers WHERE login = '${login}'`);
         if (parseInt(worker_count_result.rows[0].count) != 0) {
-            req.session.login = login;
-            res.end(JSON.stringify({status: 'ok', redirect: '/worker.html'})); // TODO мб сделать не .html?? --------- не, с /worker не работает
+            const worker_password_result = await pgPool.query(`SELECT PASSWORD FROM workers WHERE login = '${login}'`);
+            if (password == worker_password_result.rows[0].password) {
+                console.log(login, "logged successfully");
 
+                req.session.login = login;
+                res.end(JSON.stringify({status: 'ok', redirect: '/worker.html'})); // TODO мб сделать не .html?? --------- не, с /worker не работает
+            } else {
+                console.log("invalid worker password");
+                console.log(`requested password: ${password}, real password: ${worker_password_result.rows[0].password}`);
+                res.send(JSON.stringify({status: "Invalid login or password"}));
+            }
             return;
         }
 
         const user_count_result = await pgPool.query(`SELECT COUNT(*) FROM users WHERE login = '${login}'`);
         if (parseInt(user_count_result.rows[0].count) != 0) {
-            req.session.login = login;
-
-            res.end(JSON.stringify({status: 'ok', redirect: '/user'}));
+            const user_password_result = await pgPool.query(`SELECT PASSWORD FROM users WHERE login = '${login}'`);
+            if (password == user_password_result.rows[0].password) {
+                console.log(login, "logged successfully");
+                
+                req.session.login = login;
+                res.end(JSON.stringify({status: 'ok', redirect: '/user'}));
+            } else {
+                console.log("invalid user password");
+                console.log(`requested password: ${password}, real password: ${user_password_result.rows[0].password}`);
+                res.send(JSON.stringify({status: "Invalid login or password"}));
+            }
             return;
         }
 
