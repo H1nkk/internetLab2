@@ -6,79 +6,76 @@
     <link rel="stylesheet" href="styles.css">
     <title>User's page</title>
     <script>
-        var logout_url = "http://localhost:3000/logout";
-        var get_login_url = "http://localhost:3000/get_login";
-        var unsolved_url = "http://localhost:3000/user/unsolved";
-        var solved_url = "http://localhost:3000/user/solved";
-        var put_url = "http://localhost:3000/user/put_problem";
+        const logout_url = "http://localhost:3000/logout";
+        const get_login_url = "http://localhost:3000/get_login";
+        const unsolved_url = "http://localhost:3000/user/unsolved";
+        const solved_url = "http://localhost:3000/user/solved";
+        const put_url = "http://localhost:3000/user/put_problem";
 
-        function reqListenerUnsolved(event) {
-            var data = JSON.parse(this.responseText);
-            var table = document.getElementById("unsolved-table")
+        function reqListenerUnsolved() {
+            let data = JSON.parse(this.responseText);
+            let table = document.getElementById("unsolved-table");
             table.innerHTML='';
             if (data.length > 0) {
-                var hrow = table.insertRow();
-                var titleCell = hrow.insertCell();
+                let hrow = table.insertRow();
+                let titleCell = hrow.insertCell();
                 titleCell.outerHTML = '<th>Title</th>';
 
-                var descriptionCell = hrow.insertCell();
+                let descriptionCell = hrow.insertCell();
                 descriptionCell.outerHTML = '<th>Description</th>';
 
-                
-
-                var placeholder = document.getElementById("unsolved-placeholder");
+                let placeholder = document.getElementById("unsolved-placeholder");
                 placeholder.innerHTML = "";
             } else {
-                var placeholder = document.getElementById("unsolved-placeholder");
+                let placeholder = document.getElementById("unsolved-placeholder");
                 placeholder.innerHTML = "No unsolved problems to show";
             }
-            for (var i = 0; i < data.length; i++) {
-                var newRow = table.insertRow();
-                var titleCell = newRow.insertCell();
+            for (let i = 0; i < data.length; i++) {
+                let newRow = table.insertRow();
+                let titleCell = newRow.insertCell();
                 titleCell.innerHTML = data[i]['title'];
 
-                var descriptionCell = newRow.insertCell();
+                let descriptionCell = newRow.insertCell();
                 descriptionCell.innerHTML = "<pre style='font-family: sans-serif; margin: 0'>" + data[i]['description'] + "</pre>";
-
             }
         }
 
-        function reqListenerSolved(event) {
-            var data = JSON.parse(this.responseText);
-            var table = document.getElementById("solved-table")
+        function reqListenerSolved() {
+            let data = JSON.parse(this.responseText);
+            let table = document.getElementById("solved-table");
             table.innerHTML='';
             if (data.length > 0) {
-                var hrow = table.insertRow();
-                var titleCell = hrow.insertCell();
+                let hrow = table.insertRow();
+                let titleCell = hrow.insertCell();
                 titleCell.outerHTML = '<th>Title</th>';
 
-                var descriptionCell = hrow.insertCell();
+                let descriptionCell = hrow.insertCell();
                 descriptionCell.outerHTML = '<th>Description</th>';
 
-                var noteCell = hrow.insertCell();
+                let noteCell = hrow.insertCell();
                 noteCell.outerHTML = '<th>Tech support note</th>';
 
-                var placeholder = document.getElementById("solved-placeholder");
+                let placeholder = document.getElementById("solved-placeholder");
                 placeholder.innerHTML = "";
             } else {
-                var placeholder = document.getElementById("solved-placeholder");
+                let placeholder = document.getElementById("solved-placeholder");
                 placeholder.innerHTML = "No solved problems to show";
             }
-            for (var i = 0; i < data.length; i++) {
-                var newRow = table.insertRow();
-                var titleCell = newRow.insertCell();
+            for (let i = 0; i < data.length; i++) {
+                let newRow = table.insertRow();
+                let titleCell = newRow.insertCell();
                 titleCell.innerHTML = data[i]['title'];
 
-                var descriptionCell = newRow.insertCell();
+                let descriptionCell = newRow.insertCell();
                 descriptionCell.innerHTML = "<pre style='font-family: sans-serif; margin: 0'>" + data[i]['description'] + "</pre>";
 
-                var noteCell = newRow.insertCell();
+                let noteCell = newRow.insertCell();
                 noteCell.innerHTML = "<pre style='font-family: sans-serif; margin: 0'>" + data[i]['note'] + "</pre>";
             }
         }
 
         function queryTable(request, reqListener) {
-            var oReq = new XMLHttpRequest();
+            let oReq = new XMLHttpRequest();
             oReq.addEventListener('load', reqListener);
             oReq.open("GET", request);
             oReq.send();
@@ -93,38 +90,37 @@
             console.log(request);
 
             function reqListenerUsername() {
-                var data = JSON.parse(this.responseText);
-                var username_span = document.getElementById("username");
+                let data = JSON.parse(this.responseText);
+                let username_span = document.getElementById("username");
                 username_span.innerHTML = data['login'];
             }
 
-            var oReq = new XMLHttpRequest();
+            let oReq = new XMLHttpRequest();
             oReq.addEventListener('load', reqListenerUsername);
             oReq.open("GET", request);
             oReq.send();
         }
 
         function submitProblem(request) {
-            var title = document.getElementById("problem-title").value;
-            var description = document.getElementById("problem-description").value;
+            let title = document.getElementById("problem-title").value;
+            let description = document.getElementById("problem-description").value;
             if (title == '') {
-                var error_container = document.getElementById("error-container");
+                let error_container = document.getElementById("error-container");
                 error_container.innerHTML = "Problem title cannot be empty";
                 return;
             } else if (description == '') {
-                var error_container = document.getElementById("error-container");
+                let error_container = document.getElementById("error-container");
                 error_container.innerHTML = "Problem description cannot be empty";
                 return;
             } else {
-                var error_container = document.getElementById("error-container");
+                let error_container = document.getElementById("error-container");
                 error_container.innerHTML = "";
             }
-            var oReq = new XMLHttpRequest();
+            let oReq = new XMLHttpRequest();
 
-            oReq.addEventListener('load', queryTables); // TODO какая разница между queryTables и queryTables()? ############################################################
-                                                        // queryTables() - результат выполнения queryTables, а не функция
+            oReq.addEventListener('load', queryTables); 
             oReq.open("PUT", request);
-            oReq.setRequestHeader('Content-Type', 'application/json'); // что этьо такое ?? ############################################################
+            oReq.setRequestHeader('Content-Type', 'application/json'); 
             oReq.send(JSON.stringify({ title : document.getElementById("problem-title").value, description: document.getElementById("problem-description").value }));
             document.getElementById("problem-title").value = '';
             document.getElementById("problem-description").value = '';
@@ -134,7 +130,7 @@
         document.addEventListener("DOMContentLoaded", function() {setUsername(get_login_url)});
         
         function logout(request) {
-            var oReq = new XMLHttpRequest();
+            let oReq = new XMLHttpRequest();
             oReq.open("GET", request);
             oReq.onload = function() {
                 window.location.href = '/auth';
@@ -146,7 +142,7 @@
 <body style="background-color: rgb(147, 161, 165);">
     <header style="text-align: right;">
         User: <span id="username"></span>
-        <button onclick="logout(logout_url);"> <!-- TODO здесь надо перекинуть на auth.html при onclick -->
+        <button onclick="logout(logout_url);">
             log out
         </button>
     </header>

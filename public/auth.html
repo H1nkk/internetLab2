@@ -8,24 +8,28 @@
     <title>Auth</title>
     <script>
 
-        var login_url = "http://localhost:3000/check_login";
+        const login_url = "http://localhost:3000/check_login";
 
         function queryLoginResult(request) {
-            function reqListenerResult(event) {
-                var data = JSON.parse(this.responseText);
+            function reqListenerResult() {
+                let data = JSON.parse(this.responseText);
                 if (data.status == 'ok') {
                     window.location.href = data.redirect;
                 } else {
-                    var error_container = document.getElementById("error-container");
+                    let error_container = document.getElementById("error-container");
                     error_container.innerHTML = data.status;
                 }
             }
 
-            var oReq = new XMLHttpRequest();
+            let oReq = new XMLHttpRequest();
             oReq.addEventListener('load', reqListenerResult);
             oReq.open("POST", request);
             oReq.setRequestHeader('Content-Type', 'application/json');
             oReq.send(JSON.stringify({ login : document.getElementById("login").value, password: document.getElementById("password").value }));
+        }
+
+        function goToRegister() {
+            window.location.href = '/register';
         }
 
     </script>
@@ -52,14 +56,12 @@
                 <br>
             </div>
         <div style="text-align: center">
-            <button id="regbutton">
+            <button id="regbutton" onclick="goToRegister()">
                 Register
             </button>
         </div>
         <div id="error-container" style="color: rgb(201,89,106)">
         </div>
     </div>
-
-    <script src="/regscript.js"></script>
 </body>
 </html>

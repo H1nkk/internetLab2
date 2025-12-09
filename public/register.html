@@ -4,42 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
-    <title>User's page</title>
+    <title>Register</title>
     <script>
-        var register_url = "http://localhost:3000/register";
+        const register_url = "http://localhost:3000/register";
 
         function queryRegisterResult(request) {
-            var firstname = document.getElementById("firstname").value;
-            var secondname = document.getElementById("secondname").value; 
-            var lastname = document.getElementById("lastname").value; 
-            var phone = document.getElementById("phone").value; 
-            var login = document.getElementById("login").value; 
-            var password = document.getElementById("password").value;
+            let firstname = document.getElementById("firstname").value;
+            let secondname = document.getElementById("secondname").value; 
+            let lastname = document.getElementById("lastname").value; 
+            let phone = document.getElementById("phone").value; 
+            let login = document.getElementById("login").value; 
+            let password = document.getElementById("password").value;
 
             if (firstname == '' || secondname == '' || lastname == '' || phone == '' || login == '' || password == '') {
-                var error_container = document.getElementById("error-container");
+                let error_container = document.getElementById("error-container");
                 error_container.innerHTML = "Please fill out all fields";
                 return;
             }
 
-            var phoneRegex = /^\+?[0-9]{7,15}$/;
+            let phoneRegex = /^\+?[0-9]{7,15}$/;
             if (!phoneRegex.test(phone)) {
-                var error_container = document.getElementById("error-container");
+                let error_container = document.getElementById("error-container");
                 error_container.innerHTML = "Phone number must contain only '+' and digits (7-15 digits)";
                 return;
             }
 
-            function reqListenerResult(event) {
-                var data = JSON.parse(this.responseText);
+            function reqListenerResult() {
+                let data = JSON.parse(this.responseText);
                 if (data.status == 'ok') {
                     window.location.href = data.redirect;
                 } else {
-                    var error_container = document.getElementById("error-container");
+                    let error_container = document.getElementById("error-container");
                     error_container.innerHTML = data.status;
                 }
             }
 
-            var oReq = new XMLHttpRequest();
+            let oReq = new XMLHttpRequest();
             oReq.addEventListener('load', reqListenerResult);
             oReq.open("POST", request);
             oReq.setRequestHeader('Content-Type', 'application/json');
